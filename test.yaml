@@ -4,10 +4,12 @@ esphome:
 esp32:
   board: esp32-s3-devkitc-1
   framework:
-    type: arduino
+    type: ESP-IDF
 
 # Enable logging
 logger:
+  baud_rate: 115200
+  level: INFO
 
 # Enable Home Assistant API
 api:
@@ -40,9 +42,20 @@ sensor:
     humidity:
       name: "Relative Humidity"
 
+http_request:
+  useragent: esphome-device
+  timeout: 30s
+  watchdog_timeout: 30s
+
 interval:
-  - interval: 1h
+  - interval: 5min
     then:
       - lambda: |
           ESP_LOGI("main", "Temperature: %.2f", id(temperature_sensor).state);
-          // Add code here to store or send the reading
+      - http_request.post:
+          url: !secret db_url
+          headers:
+            Content-Type: application/json
+            apikey: !secret db_apikey
+          json:
+            temperature: !lambda 'char temp[10]; sprintf(temp, "%.2f", id(temperature_sensor).state); return temp;'
