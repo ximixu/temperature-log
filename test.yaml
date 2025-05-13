@@ -11,10 +11,6 @@ logger:
   baud_rate: 115200
   level: INFO
 
-# Enable Home Assistant API
-api:
-  password: ""
-
 ota:
   - platform: esphome
     password: ""
